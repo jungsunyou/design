@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>레이스 운영</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f0f2f5;
+    color: #1a1a2e;
+    min-height: 100dvh;
+  }
+
+  .header {
+    background: #fff;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header h1 {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .tab-bar {
+    display: flex;
+    background: #fff;
+    border-bottom: 2px solid #e5e7eb;
+    position: sticky;
+    top: 56px;
+    z-index: 9;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 14px 0;
+    text-align: center;
+    font-size: 15px;
+    font-weight: 600;
+    color: #9ca3af;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .card-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #6b7280;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+  }
+  .input-row input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .input-row input:focus { border-color: #3b82f6; }
+  .btn-add {
+    padding: 12px 20px;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .btn-add:active { background: #2563eb; }
+
+  .participant-list { list-style: none; }
+  .participant-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+  .participant-item:last-child { border-bottom: none; }
+  .participant-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .participant-num {
+    width: 28px; height: 28px;
+    background: #eff6ff;
+    color: #3b82f6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .participant-name { font-size: 16px; font-weight: 500; }
+  .participant-time {
+    font-size: 14px;
+    color: #9ca3af;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 24px;
+    color: #9ca3af;
+    font-size: 14px;
+  }
+
+  .countdown-section { text-align: center; padding: 20px 0; }
+  .countdown-num {
+    font-size: 120px;
+    font-weight: 800;
+    color: #3b82f6;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .countdown-num.pulse { animation: countPulse 0.4s ease-out; }
+  @keyframes countPulse {
+    0% { transform: scale(1.15); }
+    100% { transform: scale(1); }
+  }
+  .countdown-label {
+    font-size: 16px;
+    color: #6b7280;
+    margin-top: 8px;
+  }
+
+  .timer-display {
+    font-size: 64px;
+    font-weight: 800;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    color: #1a1a2e;
+    padding: 16px 0;
+  }
+
+  .controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .btn-control {
+    flex: 1;
+    padding: 16px;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-start { background: #3b82f6; color: #fff; }
+  .btn-start:active { background: #2563eb; }
+  .btn-start:disabled { background: #93c5fd; cursor: not-allowed; }
+  .btn-stop { background: #ef4444; color: #fff; }
+  .btn-stop:active { background: #dc2626; }
+  .btn-reset { background: #f3f4f6; color: #374151; }
+  .btn-reset:active { background: #e5e7eb; }
+
+  .result-card {
+    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+    color: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .result-card.touch { background: linear-gradient(135deg, #f59e0b, #d97706); }
+  .result-time {
+    font-size: 48px;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+  .result-name {
+    font-size: 20px;
+    font-weight: 600;
+    margin-top: 4px;
+  }
+
+  .registered-name {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 16px;
+  }
+
+  .phase-indicator {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .phase-step {
+    flex: 1;
+    height: 4px;
+    border-radius: 2px;
+    background: #e5e7eb;
+  }
+  .phase-step.active { background: #3b82f6; }
+  .phase-step.done { background: #22c55e; }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .badge-waiting { background: #fef3c7; color: #92400e; }
+  .badge-running { background: #dbeafe; color: #1d4ed8; }
+  .badge-done { background: #dcfce7; color: #166534; }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏁 레이스 운영</h1>
+  <span class="badge badge-waiting" id="statusBadge">대기중</span>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('dog')">🐶 댕댕레이스</button>
+  <button class="tab-btn" onclick="switchTab('touch')">🖐 촉감레이스</button>
+</div>
+
+<!-- 댕댕레이스 -->
+<div class="tab-panel active" id="panel-dog">
+  <div class="container">
+    <div class="phase-indicator">
+      <div class="phase-step active" id="dog-phase1"></div>
+      <div class="phase-step" id="dog-phase2"></div>
+      <div class="phase-step" id="dog-phase3"></div>
+    </div>
+
+    <div id="dog-registerSection">
+      <div class="card">
+        <div class="card-title">📋 댕댕이 이름 등록</div>
+        <div class="input-row">
+          <input type="text" id="dog-nameInput" placeholder="댕댕이 이름 입력" enterkeyhint="done">
+          <button class="btn-add" onclick="race.dog.register()">등록</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="dog-raceCard">
+      <div class="card-title">🏁 레이스 컨트롤</div>
+      <div id="dog-registeredName" class="registered-name hidden"></div>
+      <div id="dog-countdownSection" class="countdown-section hidden">
+        <div class="countdown-num" id="dog-countdownNum">10</div>
+        <div class="countdown-label">레이스 시작까지</div>
+      </div>
+      <div id="dog-timerSection" class="hidden">
+        <div class="timer-display" id="dog-timerDisplay">00:00.00</div>
+      </div>
+      <div class="controls" id="dog-controlBtns">
+        <button class="btn-control btn-start" id="dog-btnStart" onclick="race.dog.start()" disabled>▶ 시작</button>
+      </div>
+    </div>
+
+    <div id="dog-resultSection" class="hidden">
+      <div class="result-card">
+        <div class="result-time" id="dog-resultTime"></div>
+        <div class="result-name" id="dog-resultName"></div>
+      </div>
+    </div>
+
+    <div class="card" id="dog-historySection">
+      <div class="card-title">📜 기록 목록</div>
+      <ul class="participant-list" id="dog-historyList"></ul>
+      <div class="empty-state" id="dog-historyEmpty">아직 기록이 없어요</div>
+    </div>
+  </div>
+</div>
+
+<!-- 촉감레이스 -->
+<div class="tab-panel" id="panel-touch">
+  <div class="container">
+    <div class="phase-indicator">
+      <div class="phase-step active" id="touch-phase1"></div>
+      <div class="phase-step" id="touch-phase2"></div>
+      <div class="phase-step" id="touch-phase3"></div>
+    </div>
+
+    <div id="touch-registerSection">
+      <div class="card">
+        <div class="card-title">📋 참가자 이름 등록</div>
+        <div class="input-row">
+          <input type="text" id="touch-nameInput" placeholder="참가자 이름 입력" enterkeyhint="done">
+          <button class="btn-add" onclick="race.touch.register()">등록</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="touch-raceCard">
+      <div class="card-title">🏁 레이스 컨트롤</div>
+      <div id="touch-registeredName" class="registered-name hidden"></div>
+      <div id="touch-countdownSection" class="countdown-section hidden">
+        <div class="countdown-num" id="touch-countdownNum">10</div>
+        <div class="countdown-label">레이스 시작까지</div>
+      </div>
+      <div id="touch-timerSection" class="hidden">
+        <div class="timer-display" id="touch-timerDisplay">00:00.00</div>
+      </div>
+      <div class="controls" id="touch-controlBtns">
+        <button class="btn-control btn-start" id="touch-btnStart" onclick="race.touch.start()" disabled>▶ 시작</button>
+      </div>
+    </div>
+
+    <div id="touch-resultSection" class="hidden">
+      <div class="result-card touch">
+        <div class="result-time" id="touch-resultTime"></div>
+        <div class="result-name" id="touch-resultName"></div>
+      </div>
+    </div>
+
+    <div class="card" id="touch-historySection">
+      <div class="card-title">📜 기록 목록</div>
+      <ul class="participant-list" id="touch-historyList"></ul>
+      <div class="empty-state" id="touch-historyEmpty">아직 기록이 없어요</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 탭 전환
+  function switchTab(key) {
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', (i === 0 && key === 'dog') || (i === 1 && key === 'touch'));
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + key).classList.add('active');
+
+    // 상태 배지 업데이트
+    const st = race[key];
+    if (st.phase === 'register') {
+      document.getElementById('statusBadge').textContent = '대기중';
+      document.getElementById('statusBadge').className = 'badge badge-waiting';
+    } else if (st.phase === 'countdown') {
+      document.getElementById('statusBadge').textContent = '카운트다운';
+      document.getElementById('statusBadge').className = 'badge badge-running';
+    } else if (st.phase === 'racing') {
+      document.getElementById('statusBadge').textContent = '진행중';
+      document.getElementById('statusBadge').className = 'badge badge-running';
+    } else {
+      document.getElementById('statusBadge').textContent = '완료';
+      document.getElementById('statusBadge').className = 'badge badge-done';
+    }
+  }
+
+  function el(id) { return document.getElementById(id); }
+
+  function formatTime(ms) {
+    const min = Math.floor(ms / 60000);
+    const sec = Math.floor((ms % 60000) / 1000);
+    const cs = Math.floor((ms % 1000) / 10);
+    return `${String(min).padStart(2,'0')}:${String(sec).padStart(2,'0')}.${String(cs).padStart(2,'0')}`;
+  }
+
+  function esc(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function setPhase(prefix, n) {
+    for (let i = 1; i <= 3; i++) {
+      const e = el(prefix + '-phase' + i);
+      e.className = 'phase-step';
+      if (i < n) e.classList.add('done');
+      if (i === n) e.classList.add('active');
+    }
+  }
+
+  function createRace(prefix, emoji) {
+    const state = {
+      currentName: '',
+      countdownTimer: null,
+      raceTimer: null,
+      raceStartTime: 0,
+      history: [],
+      phase: 'register'
+    };
+
+    const input = el(prefix + '-nameInput');
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') state.register();
+    });
+
+    state.register = function() {
+      const name = input.value.trim();
+      if (!name) return;
+      state.currentName = name;
+      input.value = '';
+
+      el(prefix + '-registerSection').classList.add('hidden');
+      el(prefix + '-registeredName').textContent = `${emoji} ${name}`;
+      el(prefix + '-registeredName').classList.remove('hidden');
+      el(prefix + '-btnStart').disabled = false;
+      state.phase = 'register';
+      setPhase(prefix, 1);
+    };
+
+    state.start = function() {
+      state.phase = 'countdown';
+      document.getElementById('statusBadge').textContent = '카운트다운';
+      document.getElementById('statusBadge').className = 'badge badge-running';
+      setPhase(prefix, 2);
+
+      el(prefix + '-resultSection').classList.add('hidden');
+      el(prefix + '-countdownSection').classList.remove('hidden');
+      el(prefix + '-timerSection').classList.add('hidden');
+
+      let count = 10;
+      const numEl = el(prefix + '-countdownNum');
+      numEl.textContent = count;
+      numEl.style.color = '#3b82f6';
+
+      el(prefix + '-controlBtns').innerHTML =
+        `<button class="btn-control btn-reset" onclick="race.${prefix}.cancel()">취소</button>`;
+
+      state.countdownTimer = setInterval(() => {
+        count--;
+        numEl.textContent = count;
+        numEl.classList.remove('pulse');
+        void numEl.offsetWidth;
+        numEl.classList.add('pulse');
+        if (count <= 3) numEl.style.color = '#ef4444';
+        if (count <= 0) {
+          clearInterval(state.countdownTimer);
+          numEl.style.color = '#3b82f6';
+          state.beginTimer();
+        }
+      }, 1000);
+    };
+
+    state.beginTimer = function() {
+      state.phase = 'racing';
+      document.getElementById('statusBadge').textContent = '진행중';
+      el(prefix + '-countdownSection').classList.add('hidden');
+      el(prefix + '-timerSection').classList.remove('hidden');
+      state.raceStartTime = performance.now();
+
+      el(prefix + '-controlBtns').innerHTML =
+        `<button class="btn-control btn-stop" onclick="race.${prefix}.stop()">⏹ 종료</button>`;
+
+      function tick() {
+        const elapsed = performance.now() - state.raceStartTime;
+        el(prefix + '-timerDisplay').textContent = formatTime(elapsed);
+        state.raceTimer = requestAnimationFrame(tick);
+      }
+      state.raceTimer = requestAnimationFrame(tick);
+    };
+
+    state.stop = function() {
+      const elapsed = performance.now() - state.raceStartTime;
+      cancelAnimationFrame(state.raceTimer);
+      state.phase = 'done';
+
+      document.getElementById('statusBadge').textContent = '완료';
+      document.getElementById('statusBadge').className = 'badge badge-done';
+      setPhase(prefix, 3);
+
+      el(prefix + '-countdownSection').classList.add('hidden');
+      el(prefix + '-timerSection').classList.add('hidden');
+      el(prefix + '-resultTime').textContent = formatTime(elapsed);
+      el(prefix + '-resultName').textContent = state.currentName;
+      el(prefix + '-resultSection').classList.remove('hidden');
+
+      state.history.push({ name: state.currentName, time: elapsed });
+      state.renderHistory();
+
+      el(prefix + '-controlBtns').innerHTML =
+        `<button class="btn-control btn-start" onclick="race.${prefix}.reset()">🏠 처음으로</button>`;
+    };
+
+    state.cancel = function() {
+      clearInterval(state.countdownTimer);
+      cancelAnimationFrame(state.raceTimer);
+      state.reset();
+    };
+
+    state.reset = function() {
+      clearInterval(state.countdownTimer);
+      cancelAnimationFrame(state.raceTimer);
+      state.currentName = '';
+      state.phase = 'register';
+
+      document.getElementById('statusBadge').textContent = '대기중';
+      document.getElementById('statusBadge').className = 'badge badge-waiting';
+      setPhase(prefix, 1);
+
+      el(prefix + '-registerSection').classList.remove('hidden');
+      el(prefix + '-registeredName').classList.add('hidden');
+      el(prefix + '-countdownSection').classList.add('hidden');
+      el(prefix + '-timerSection').classList.add('hidden');
+      el(prefix + '-resultSection').classList.add('hidden');
+
+      el(prefix + '-controlBtns').innerHTML =
+        `<button class="btn-control btn-start" id="${prefix}-btnStart" onclick="race.${prefix}.start()" disabled>▶ 시작</button>`;
+    };
+
+    state.renderHistory = function() {
+      const list = el(prefix + '-historyList');
+      const empty = el(prefix + '-historyEmpty');
+      if (state.history.length === 0) {
+        list.innerHTML = '';
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+      list.innerHTML = state.history.map((h, i) => `
+        <li class="participant-item">
+          <div class="participant-info">
+            <span class="participant-num">${i + 1}</span>
+            <span class="participant-name">${esc(h.name)}</span>
+          </div>
+          <span class="participant-time">${formatTime(h.time)}</span>
+        </li>
+      `).join('');
+    };
+
+    return state;
+  }
+
+  const race = {
+    dog: createRace('dog', '🐕'),
+    touch: createRace('touch', '🖐')
+  };
+</script>
+</body>
+</html>
