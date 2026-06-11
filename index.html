@@ -15,7 +15,7 @@
 
   .header {
     background: #fff;
-    padding: 16px 20px;
+    padding: 12px 20px;
     border-bottom: 1px solid #e5e7eb;
     display: flex;
     align-items: center;
@@ -23,11 +23,37 @@
     position: sticky;
     top: 0;
     z-index: 10;
+    min-height: 56px;
   }
-  .header h1 {
-    font-size: 18px;
-    font-weight: 700;
+  .header h1 { font-size: 18px; font-weight: 700; }
+  .header-actions { display: flex; gap: 8px; }
+  .btn-header {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
+  .btn-header-cancel { background: #f3f4f6; color: #374151; }
+  .btn-header-cancel:active { background: #e5e7eb; }
+  .btn-header-confirm { background: #3b82f6; color: #fff; }
+  .btn-header-confirm:active { background: #2563eb; }
+  .btn-header-confirm:disabled { background: #93c5fd; cursor: not-allowed; }
+  .btn-ticket-cancel {
+    background: #3b82f6;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+  .btn-ticket-cancel:active { background: #2563eb; }
 
   .tab-bar {
     display: flex;
@@ -51,16 +77,32 @@
     cursor: pointer;
     transition: all 0.2s;
   }
-  .tab-btn.active {
-    color: #3b82f6;
-    border-bottom-color: #3b82f6;
-  }
+  .tab-btn.active { color: #3b82f6; border-bottom-color: #3b82f6; }
 
-  .container {
+  .sub-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
     max-width: 480px;
     margin: 0 auto;
-    padding: 16px;
   }
+  .sub-tab {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f3f4f6;
+    color: #6b7280;
+    transition: all 0.2s;
+  }
+  .sub-tab.active { background: #3b82f6; color: #fff; }
+
+  .container { max-width: 480px; margin: 0 auto; padding: 0 16px 16px; }
 
   .card {
     background: #fff;
@@ -79,10 +121,7 @@
     gap: 8px;
   }
 
-  .input-row {
-    display: flex;
-    gap: 8px;
-  }
+  .input-row { display: flex; gap: 8px; }
   .input-row input {
     flex: 1;
     padding: 12px 16px;
@@ -103,25 +142,44 @@
     font-weight: 600;
     cursor: pointer;
     white-space: nowrap;
-    transition: background 0.2s;
   }
   .btn-add:active { background: #2563eb; }
 
-  .participant-list { list-style: none; }
-  .participant-item {
+  /* Record list */
+  .record-list { list-style: none; }
+  .record-item {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 12px 0;
+    padding: 14px 0;
     border-bottom: 1px solid #f3f4f6;
-  }
-  .participant-item:last-child { border-bottom: none; }
-  .participant-info {
-    display: flex;
-    align-items: center;
     gap: 12px;
   }
-  .participant-num {
+  .record-item:last-child { border-bottom: none; }
+  .record-checkbox {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid #d1d5db;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    flex-shrink: 0;
+    position: relative;
+    background: #fff;
+  }
+  .record-checkbox:checked {
+    background: #3b82f6;
+    border-color: #3b82f6;
+  }
+  .record-checkbox:checked::after {
+    content: '✓';
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%,-50%);
+  }
+  .record-num {
     width: 28px; height: 28px;
     background: #eff6ff;
     color: #3b82f6;
@@ -131,13 +189,28 @@
     justify-content: center;
     font-size: 13px;
     font-weight: 700;
+    flex-shrink: 0;
   }
-  .participant-name { font-size: 16px; font-weight: 500; }
-  .participant-time {
+  .record-info { flex: 1; min-width: 0; }
+  .record-name { font-size: 15px; font-weight: 500; }
+  .record-meta { font-size: 12px; color: #9ca3af; margin-top: 2px; }
+  .record-time {
     font-size: 14px;
-    color: #9ca3af;
+    font-weight: 600;
+    color: #1a1a2e;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
+  .record-status {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .status-valid { background: #dcfce7; color: #166534; }
+  .status-cancelled { background: #fee2e2; color: #991b1b; }
+  .record-time.cancelled { text-decoration: line-through; color: #d1d5db; }
 
   .empty-state {
     text-align: center;
@@ -159,11 +232,7 @@
     0% { transform: scale(1.15); }
     100% { transform: scale(1); }
   }
-  .countdown-label {
-    font-size: 16px;
-    color: #6b7280;
-    margin-top: 8px;
-  }
+  .countdown-label { font-size: 16px; color: #6b7280; margin-top: 8px; }
 
   .timer-display {
     font-size: 64px;
@@ -174,11 +243,7 @@
     padding: 16px 0;
   }
 
-  .controls {
-    display: flex;
-    gap: 12px;
-    margin-top: 8px;
-  }
+  .controls { display: flex; gap: 12px; margin-top: 8px; }
   .btn-control {
     flex: 1;
     padding: 16px;
@@ -210,16 +275,8 @@
     text-align: center;
   }
   .result-card.touch { background: linear-gradient(135deg, #f59e0b, #d97706); }
-  .result-time {
-    font-size: 48px;
-    font-weight: 800;
-    font-variant-numeric: tabular-nums;
-  }
-  .result-name {
-    font-size: 20px;
-    font-weight: 600;
-    margin-top: 4px;
-  }
+  .result-time { font-size: 48px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .result-name { font-size: 20px; font-weight: 600; margin-top: 4px; }
 
   .registered-name {
     text-align: center;
@@ -229,17 +286,81 @@
     margin-bottom: 16px;
   }
 
-  .phase-indicator {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
+  /* NFC */
+  .btn-scan {
+    width: 100%;
+    padding: 18px;
+    background: #3b82f6;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-bottom: 8px;
   }
-  .phase-step {
+  .btn-scan:active { background: #2563eb; }
+  .btn-scan.scanning { animation: scanPulse 1.5s ease-in-out infinite; }
+  @keyframes scanPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+    color: #9ca3af;
+    font-size: 13px;
+  }
+  .divider::before, .divider::after {
+    content: '';
     flex: 1;
-    height: 4px;
-    border-radius: 2px;
+    height: 1px;
     background: #e5e7eb;
   }
+
+  .manual-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .manual-desc { font-size: 14px; color: #9ca3af; margin-bottom: 16px; }
+  .field-label { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #1a1a2e; }
+  .field-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    border-bottom: 2px solid #e5e7eb;
+    border-radius: 0;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 16px;
+    background: transparent;
+  }
+  .field-input:focus { border-bottom-color: #3b82f6; }
+  .field-input::placeholder { color: #d1d5db; }
+  .btn-manual-submit {
+    width: 100%;
+    padding: 16px;
+    background: #e5e7eb;
+    color: #9ca3af;
+    border: none;
+    border-radius: 14px;
+    font-size: 17px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-manual-submit.active { background: #3b82f6; color: #fff; }
+  .btn-manual-submit.active:active { background: #2563eb; }
+
+  .nfc-success-box { text-align: center; padding: 24px 0; }
+  .nfc-success-icon { font-size: 48px; margin-bottom: 8px; }
+  .nfc-success-text { color: #22c55e; font-size: 18px; font-weight: 600; }
+  .nfc-nickname { font-size: 24px; font-weight: 800; color: #1a1a2e; margin-top: 8px; }
+  .nfc-info { font-size: 13px; color: #9ca3af; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+  .phase-indicator { display: flex; gap: 8px; margin-bottom: 16px; }
+  .phase-step { flex: 1; height: 4px; border-radius: 2px; background: #e5e7eb; }
   .phase-step.active { background: #3b82f6; }
   .phase-step.done { background: #22c55e; }
 
@@ -254,9 +375,14 @@
   .badge-running { background: #dbeafe; color: #1d4ed8; }
   .badge-done { background: #dcfce7; color: #166534; }
 
+  .select-count {
+    font-size: 14px;
+    color: #3b82f6;
+    font-weight: 600;
+  }
+
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
-
   .hidden { display: none !important; }
 </style>
 </head>
@@ -264,7 +390,9 @@
 
 <div class="header">
   <h1>🏁 레이스 운영</h1>
-  <span class="badge badge-waiting" id="statusBadge">대기중</span>
+  <div class="header-actions" id="headerActions">
+    <span class="badge badge-waiting" id="statusBadge">대기중</span>
+  </div>
 </div>
 
 <div class="tab-bar">
@@ -274,18 +402,44 @@
 
 <!-- 댕댕레이스 -->
 <div class="tab-panel active" id="panel-dog">
-  <div class="container">
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSubTab('dog','op')">🎮 운영 관리</button>
+    <button class="sub-tab" onclick="switchSubTab('dog','rec')">🕐 기록 관리</button>
+  </div>
+
+  <!-- 운영 관리 -->
+  <div id="dog-sub-op" class="container">
     <div class="phase-indicator">
       <div class="phase-step active" id="dog-phase1"></div>
       <div class="phase-step" id="dog-phase2"></div>
       <div class="phase-step" id="dog-phase3"></div>
+      <div class="phase-step" id="dog-phase4"></div>
     </div>
 
-    <div id="dog-registerSection">
+    <div id="dog-nfcCard" class="card">
+      <div id="dog-nfcScanArea">
+        <button class="btn-scan" id="dog-btnScan" onclick="race.dog.startNfcScan()">스캔하기</button>
+        <div class="divider">또는</div>
+        <div>
+          <div class="manual-title">티켓 번호 입력</div>
+          <input type="text" class="field-input" id="dog-manualTicket" placeholder="티켓 번호를 입력하세요 (13자리)" maxlength="13" inputmode="numeric">
+          <button class="btn-manual-submit" id="dog-btnManualSubmit" onclick="race.dog.manualSubmit()">등록하기</button>
+        </div>
+      </div>
+      <div id="dog-nfcSuccessArea" class="nfc-success-box hidden">
+        <div class="nfc-success-icon">✅</div>
+        <div class="nfc-success-text">스캔 완료!</div>
+        <div class="nfc-nickname" id="dog-nfcNickname"></div>
+        <div class="nfc-info" id="dog-nfcInfo"></div>
+      </div>
+    </div>
+
+    <div id="dog-registerSection" class="hidden">
       <div class="card">
-        <div class="card-title">📋 댕댕이 이름 등록</div>
+        <div class="card-title">📋 반려견 이름 등록</div>
+        <div id="dog-nicknameDisplay" style="text-align:center;font-size:16px;color:#3b82f6;font-weight:600;margin-bottom:12px;"></div>
         <div class="input-row">
-          <input type="text" id="dog-nameInput" placeholder="댕댕이 이름 입력" enterkeyhint="done">
+          <input type="text" id="dog-nameInput" placeholder="반려견 이름 입력" enterkeyhint="done">
           <button class="btn-add" onclick="race.dog.register()">등록</button>
         </div>
       </div>
@@ -312,27 +466,55 @@
         <div class="result-name" id="dog-resultName"></div>
       </div>
     </div>
+  </div>
 
-    <div class="card" id="dog-historySection">
+  <!-- 기록 관리 -->
+  <div id="dog-sub-rec" class="container hidden">
+    <div class="card">
       <div class="card-title">📜 기록 목록</div>
-      <ul class="participant-list" id="dog-historyList"></ul>
-      <div class="empty-state" id="dog-historyEmpty">아직 기록이 없어요</div>
+      <ul class="record-list" id="dog-recordList"></ul>
+      <div class="empty-state" id="dog-recordEmpty">아직 기록이 없어요</div>
     </div>
   </div>
 </div>
 
 <!-- 촉감레이스 -->
 <div class="tab-panel" id="panel-touch">
-  <div class="container">
+  <div class="sub-tabs">
+    <button class="sub-tab active" onclick="switchSubTab('touch','op')">🎮 운영 관리</button>
+    <button class="sub-tab" onclick="switchSubTab('touch','rec')">🕐 기록 관리</button>
+  </div>
+
+  <div id="touch-sub-op" class="container">
     <div class="phase-indicator">
       <div class="phase-step active" id="touch-phase1"></div>
       <div class="phase-step" id="touch-phase2"></div>
       <div class="phase-step" id="touch-phase3"></div>
+      <div class="phase-step" id="touch-phase4"></div>
     </div>
 
-    <div id="touch-registerSection">
+    <div id="touch-nfcCard" class="card">
+      <div id="touch-nfcScanArea">
+        <button class="btn-scan" id="touch-btnScan" onclick="race.touch.startNfcScan()">스캔하기</button>
+        <div class="divider">또는</div>
+        <div>
+          <div class="manual-title">티켓 번호 입력</div>
+          <input type="text" class="field-input" id="touch-manualTicket" placeholder="티켓 번호를 입력하세요 (13자리)" maxlength="13" inputmode="numeric">
+          <button class="btn-manual-submit" id="touch-btnManualSubmit" onclick="race.touch.manualSubmit()">등록하기</button>
+        </div>
+      </div>
+      <div id="touch-nfcSuccessArea" class="nfc-success-box hidden">
+        <div class="nfc-success-icon">✅</div>
+        <div class="nfc-success-text">스캔 완료!</div>
+        <div class="nfc-nickname" id="touch-nfcNickname"></div>
+        <div class="nfc-info" id="touch-nfcInfo"></div>
+      </div>
+    </div>
+
+    <div id="touch-registerSection" class="hidden">
       <div class="card">
         <div class="card-title">📋 참가자 이름 등록</div>
+        <div id="touch-nicknameDisplay" style="text-align:center;font-size:16px;color:#f59e0b;font-weight:600;margin-bottom:12px;"></div>
         <div class="input-row">
           <input type="text" id="touch-nameInput" placeholder="참가자 이름 입력" enterkeyhint="done">
           <button class="btn-add" onclick="race.touch.register()">등록</button>
@@ -361,38 +543,68 @@
         <div class="result-name" id="touch-resultName"></div>
       </div>
     </div>
+  </div>
 
-    <div class="card" id="touch-historySection">
+  <div id="touch-sub-rec" class="container hidden">
+    <div class="card">
       <div class="card-title">📜 기록 목록</div>
-      <ul class="participant-list" id="touch-historyList"></ul>
-      <div class="empty-state" id="touch-historyEmpty">아직 기록이 없어요</div>
+      <ul class="record-list" id="touch-recordList"></ul>
+      <div class="empty-state" id="touch-recordEmpty">아직 기록이 없어요</div>
     </div>
   </div>
 </div>
 
 <script>
-  // 탭 전환
+  let activeTab = 'dog';
+  let activeSubTab = { dog: 'op', touch: 'op' };
+
   function switchTab(key) {
-    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    activeTab = key;
+    document.querySelectorAll('.tab-bar .tab-btn').forEach((btn, i) => {
       btn.classList.toggle('active', (i === 0 && key === 'dog') || (i === 1 && key === 'touch'));
     });
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + key).classList.add('active');
+    el('panel-' + key).classList.add('active');
+    race[key].syncBadge();
+    updateHeaderActions();
+  }
 
-    // 상태 배지 업데이트
-    const st = race[key];
-    if (st.phase === 'register') {
-      document.getElementById('statusBadge').textContent = '대기중';
-      document.getElementById('statusBadge').className = 'badge badge-waiting';
-    } else if (st.phase === 'countdown') {
-      document.getElementById('statusBadge').textContent = '카운트다운';
-      document.getElementById('statusBadge').className = 'badge badge-running';
-    } else if (st.phase === 'racing') {
-      document.getElementById('statusBadge').textContent = '진행중';
-      document.getElementById('statusBadge').className = 'badge badge-running';
+  function switchSubTab(raceKey, sub) {
+    activeSubTab[raceKey] = sub;
+    const panel = el('panel-' + raceKey);
+    panel.querySelectorAll('.sub-tab').forEach((btn, i) => {
+      btn.classList.toggle('active', (i === 0 && sub === 'op') || (i === 1 && sub === 'rec'));
+    });
+    el(raceKey + '-sub-op').classList.toggle('hidden', sub !== 'op');
+    el(raceKey + '-sub-rec').classList.toggle('hidden', sub !== 'rec');
+
+    if (sub === 'rec') {
+      race[raceKey].selectedRecords.clear();
+      race[raceKey].renderRecords();
+    }
+    updateHeaderActions();
+  }
+
+  function updateHeaderActions() {
+    const actions = el('headerActions');
+    const r = race[activeTab];
+    const sub = activeSubTab[activeTab];
+
+    if (sub === 'rec') {
+      const count = r.selectedRecords.size;
+      if (count > 0) {
+        const confirmLabel = r.selectAction === 'use' ? '사용 확정' : '취소 확정';
+        actions.innerHTML =
+          `<button class="btn-header btn-header-cancel" onclick="race.${activeTab}.cancelSelection()">✕ 취소</button>` +
+          `<button class="btn-header btn-header-confirm" onclick="race.${activeTab}.confirmAction()">✓ ${confirmLabel} (${count})</button>`;
+      } else {
+        actions.innerHTML =
+          `<button class="btn-ticket-cancel" style="background:#22c55e;" onclick="race.${activeTab}.enterSelectMode('use')">🎫 티켓 사용 처리</button>` +
+          `<button class="btn-ticket-cancel" onclick="race.${activeTab}.enterSelectMode('cancel')">🎫 티켓 취소 처리</button>`;
+      }
     } else {
-      document.getElementById('statusBadge').textContent = '완료';
-      document.getElementById('statusBadge').className = 'badge badge-done';
+      actions.innerHTML = `<span class="badge badge-waiting" id="statusBadge">대기중</span>`;
+      r.syncBadge();
     }
   }
 
@@ -412,7 +624,7 @@
   }
 
   function setPhase(prefix, n) {
-    for (let i = 1; i <= 3; i++) {
+    for (let i = 1; i <= 4; i++) {
       const e = el(prefix + '-phase' + i);
       e.className = 'phase-step';
       if (i < n) e.classList.add('done');
@@ -423,11 +635,17 @@
   function createRace(prefix, emoji) {
     const state = {
       currentName: '',
+      nickname: '',
+      nfcSerial: '',
       countdownTimer: null,
       raceTimer: null,
       raceStartTime: 0,
       history: [],
-      phase: 'register'
+      phase: 'nfc',
+      nfcAbort: null,
+      selectedRecords: new Set(),
+      selectMode: false,
+      selectAction: ''
     };
 
     const input = el(prefix + '-nameInput');
@@ -435,26 +653,123 @@
       if (e.key === 'Enter') state.register();
     });
 
+    const manualTicket = el(prefix + '-manualTicket');
+    const manualBtn = el(prefix + '-btnManualSubmit');
+
+    function checkManualFields() {
+      const filled = manualTicket.value.trim().length > 0;
+      manualBtn.classList.toggle('active', filled);
+    }
+    manualTicket.addEventListener('input', checkManualFields);
+
+    state.syncBadge = function() {
+      const badge = el('statusBadge');
+      if (!badge) return;
+      if (state.phase === 'nfc' || state.phase === 'register') {
+        badge.textContent = '대기중';
+        badge.className = 'badge badge-waiting';
+      } else if (state.phase === 'countdown') {
+        badge.textContent = '카운트다운';
+        badge.className = 'badge badge-running';
+      } else if (state.phase === 'racing') {
+        badge.textContent = '진행중';
+        badge.className = 'badge badge-running';
+      } else {
+        badge.textContent = '완료';
+        badge.className = 'badge badge-done';
+      }
+    };
+
+    // NFC
+    state.startNfcScan = function() {
+      state.phase = 'nfc';
+      setPhase(prefix, 1);
+      const scanBtn = el(prefix + '-btnScan');
+      scanBtn.classList.add('scanning');
+      scanBtn.textContent = '스캔중...';
+
+      if ('NDEFReader' in window) {
+        state.nfcAbort = new AbortController();
+        const reader = new NDEFReader();
+        reader.scan({ signal: state.nfcAbort.signal }).then(() => {
+          reader.addEventListener('reading', ({ serialNumber, message }) => {
+            state.nfcSerial = serialNumber || '';
+            let nickname = '';
+            if (message && message.records) {
+              for (const record of message.records) {
+                if (record.recordType === 'text') {
+                  const decoder = new TextDecoder(record.encoding || 'utf-8');
+                  nickname = decoder.decode(record.data);
+                  break;
+                }
+              }
+            }
+            state.nickname = nickname || serialNumber || '';
+            state.onNfcScanned();
+          }, { once: true });
+        }).catch(() => {
+          scanBtn.classList.remove('scanning');
+          scanBtn.textContent = '스캔하기';
+        });
+      } else {
+        scanBtn.classList.remove('scanning');
+        scanBtn.textContent = '스캔하기';
+        alert('이 기기에서는 NFC를 지원하지 않습니다.\n직접입력을 이용해주세요.');
+      }
+    };
+
+    state.onNfcScanned = function() {
+      if (state.nfcAbort) state.nfcAbort.abort();
+      el(prefix + '-nfcScanArea').classList.add('hidden');
+      el(prefix + '-nfcSuccessArea').classList.remove('hidden');
+      el(prefix + '-nfcNickname').textContent = state.nickname;
+      el(prefix + '-nfcInfo').textContent = state.nfcSerial || '';
+      setTimeout(() => state.goToRegister(), 1000);
+    };
+
+    state.manualSubmit = function() {
+      const ticket = manualTicket.value.trim();
+      if (!ticket) return;
+      state.nickname = '';
+      state.nfcSerial = ticket;
+      el(prefix + '-nfcScanArea').classList.add('hidden');
+      el(prefix + '-nfcSuccessArea').classList.remove('hidden');
+      el(prefix + '-nfcNickname').textContent = '티켓 등록 완료';
+      el(prefix + '-nfcInfo').textContent = ticket;
+      setTimeout(() => state.goToRegister(), 800);
+    };
+
+    state.goToRegister = function() {
+      state.phase = 'register';
+      el(prefix + '-nfcCard').classList.add('hidden');
+      el(prefix + '-registerSection').classList.remove('hidden');
+      setPhase(prefix, 2);
+      if (state.nickname) {
+        el(prefix + '-nicknameDisplay').textContent = `👤 ${state.nickname}`;
+      } else {
+        el(prefix + '-nicknameDisplay').textContent = '';
+      }
+      input.focus();
+    };
+
     state.register = function() {
       const name = input.value.trim();
       if (!name) return;
       state.currentName = name;
       input.value = '';
-
       el(prefix + '-registerSection').classList.add('hidden');
-      el(prefix + '-registeredName').textContent = `${emoji} ${name}`;
+      const displayName = state.nickname ? `${emoji} ${name} (${state.nickname})` : `${emoji} ${name}`;
+      el(prefix + '-registeredName').textContent = displayName;
       el(prefix + '-registeredName').classList.remove('hidden');
-      el(prefix + '-btnStart').disabled = false;
-      state.phase = 'register';
-      setPhase(prefix, 1);
+      setPhase(prefix, 2);
+      el(prefix + '-controlBtns').innerHTML =
+        `<button class="btn-control btn-start" id="${prefix}-btnStart" onclick="race.${prefix}.start()">▶ 시작</button>`;
     };
 
     state.start = function() {
       state.phase = 'countdown';
-      document.getElementById('statusBadge').textContent = '카운트다운';
-      document.getElementById('statusBadge').className = 'badge badge-running';
-      setPhase(prefix, 2);
-
+      state.syncBadge();
+      setPhase(prefix, 3);
       el(prefix + '-resultSection').classList.add('hidden');
       el(prefix + '-countdownSection').classList.remove('hidden');
       el(prefix + '-timerSection').classList.add('hidden');
@@ -484,17 +799,14 @@
 
     state.beginTimer = function() {
       state.phase = 'racing';
-      document.getElementById('statusBadge').textContent = '진행중';
+      state.syncBadge();
       el(prefix + '-countdownSection').classList.add('hidden');
       el(prefix + '-timerSection').classList.remove('hidden');
       state.raceStartTime = performance.now();
-
       el(prefix + '-controlBtns').innerHTML =
         `<button class="btn-control btn-stop" onclick="race.${prefix}.stop()">⏹ 종료</button>`;
-
       function tick() {
-        const elapsed = performance.now() - state.raceStartTime;
-        el(prefix + '-timerDisplay').textContent = formatTime(elapsed);
+        el(prefix + '-timerDisplay').textContent = formatTime(performance.now() - state.raceStartTime);
         state.raceTimer = requestAnimationFrame(tick);
       }
       state.raceTimer = requestAnimationFrame(tick);
@@ -504,19 +816,23 @@
       const elapsed = performance.now() - state.raceStartTime;
       cancelAnimationFrame(state.raceTimer);
       state.phase = 'done';
-
-      document.getElementById('statusBadge').textContent = '완료';
-      document.getElementById('statusBadge').className = 'badge badge-done';
-      setPhase(prefix, 3);
-
+      state.syncBadge();
+      setPhase(prefix, 4);
       el(prefix + '-countdownSection').classList.add('hidden');
       el(prefix + '-timerSection').classList.add('hidden');
       el(prefix + '-resultTime').textContent = formatTime(elapsed);
-      el(prefix + '-resultName').textContent = state.currentName;
+      el(prefix + '-resultName').textContent = state.nickname
+        ? `${state.currentName} (${state.nickname})` : state.currentName;
       el(prefix + '-resultSection').classList.remove('hidden');
 
-      state.history.push({ name: state.currentName, time: elapsed });
-      state.renderHistory();
+      state.history.push({
+        name: state.currentName,
+        nickname: state.nickname,
+        nfc: state.nfcSerial,
+        time: elapsed,
+        status: 'valid'
+      });
+      state.renderRecords();
 
       el(prefix + '-controlBtns').innerHTML =
         `<button class="btn-control btn-start" onclick="race.${prefix}.reset()">🏠 처음으로</button>`;
@@ -525,20 +841,29 @@
     state.cancel = function() {
       clearInterval(state.countdownTimer);
       cancelAnimationFrame(state.raceTimer);
+      if (state.nfcAbort) state.nfcAbort.abort();
       state.reset();
     };
 
     state.reset = function() {
       clearInterval(state.countdownTimer);
       cancelAnimationFrame(state.raceTimer);
+      if (state.nfcAbort) state.nfcAbort.abort();
       state.currentName = '';
-      state.phase = 'register';
-
-      document.getElementById('statusBadge').textContent = '대기중';
-      document.getElementById('statusBadge').className = 'badge badge-waiting';
+      state.nickname = '';
+      state.nfcSerial = '';
+      state.phase = 'nfc';
+      state.syncBadge();
       setPhase(prefix, 1);
 
-      el(prefix + '-registerSection').classList.remove('hidden');
+      el(prefix + '-nfcCard').classList.remove('hidden');
+      el(prefix + '-nfcScanArea').classList.remove('hidden');
+      el(prefix + '-nfcSuccessArea').classList.add('hidden');
+      el(prefix + '-btnScan').classList.remove('scanning');
+      el(prefix + '-btnScan').textContent = '스캔하기';
+      manualTicket.value = '';
+      manualBtn.classList.remove('active');
+      el(prefix + '-registerSection').classList.add('hidden');
       el(prefix + '-registeredName').classList.add('hidden');
       el(prefix + '-countdownSection').classList.add('hidden');
       el(prefix + '-timerSection').classList.add('hidden');
@@ -548,24 +873,84 @@
         `<button class="btn-control btn-start" id="${prefix}-btnStart" onclick="race.${prefix}.start()" disabled>▶ 시작</button>`;
     };
 
-    state.renderHistory = function() {
-      const list = el(prefix + '-historyList');
-      const empty = el(prefix + '-historyEmpty');
+    // 기록 관리
+    state.enterSelectMode = function(action) {
+      state.selectMode = true;
+      state.selectAction = action;
+      state.selectedRecords.clear();
+      state.renderRecords();
+      updateHeaderActions();
+    };
+
+    state.cancelSelection = function() {
+      state.selectMode = false;
+      state.selectedRecords.clear();
+      state.renderRecords();
+      updateHeaderActions();
+    };
+
+    state.toggleRecord = function(idx) {
+      if (state.selectedRecords.has(idx)) {
+        state.selectedRecords.delete(idx);
+      } else {
+        state.selectedRecords.add(idx);
+      }
+      state.renderRecords();
+      updateHeaderActions();
+    };
+
+    state.confirmAction = function() {
+      if (state.selectedRecords.size === 0) return;
+      const newStatus = state.selectAction === 'use' ? 'valid' : 'cancelled';
+      state.selectedRecords.forEach(idx => {
+        if (idx >= 0 && idx < state.history.length) {
+          state.history[idx].status = newStatus;
+        }
+      });
+      state.selectMode = false;
+      state.selectAction = '';
+      state.selectedRecords.clear();
+      state.renderRecords();
+      updateHeaderActions();
+    };
+
+    state.renderRecords = function() {
+      const list = el(prefix + '-recordList');
+      const empty = el(prefix + '-recordEmpty');
       if (state.history.length === 0) {
         list.innerHTML = '';
         empty.classList.remove('hidden');
         return;
       }
       empty.classList.add('hidden');
-      list.innerHTML = state.history.map((h, i) => `
-        <li class="participant-item">
-          <div class="participant-info">
-            <span class="participant-num">${i + 1}</span>
-            <span class="participant-name">${esc(h.name)}</span>
-          </div>
-          <span class="participant-time">${formatTime(h.time)}</span>
-        </li>
-      `).join('');
+      list.innerHTML = state.history.map((h, i) => {
+        const displayName = h.nickname ? `${h.name} (${h.nickname})` : h.name;
+        const isCancelled = h.status === 'cancelled';
+        const checked = state.selectedRecords.has(i) ? 'checked' : '';
+        const showCheckbox = state.selectMode && (
+          (state.selectAction === 'cancel' && !isCancelled) ||
+          (state.selectAction === 'use' && isCancelled)
+        );
+        const timeClass = isCancelled ? 'record-time cancelled' : 'record-time';
+        const statusHtml = isCancelled
+          ? `<span class="record-status status-cancelled">취소</span>`
+          : `<span class="record-status status-valid">사용</span>`;
+
+        return `
+          <li class="record-item">
+            ${showCheckbox
+              ? `<input type="checkbox" class="record-checkbox" ${checked} onchange="race.${prefix}.toggleRecord(${i})">`
+              : ''}
+            <span class="record-num">${i + 1}</span>
+            <div class="record-info">
+              <div class="record-name">${esc(displayName)}</div>
+              <div class="record-meta">티켓 ${esc(h.nfc || '-')}</div>
+            </div>
+            ${statusHtml}
+            <span class="${timeClass}">${formatTime(h.time)}</span>
+          </li>
+        `;
+      }).join('');
     };
 
     return state;
