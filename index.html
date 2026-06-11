@@ -208,8 +208,21 @@
     font-weight: 600;
     white-space: nowrap;
   }
-  .status-valid { background: #dcfce7; color: #166534; }
   .status-cancelled { background: #fee2e2; color: #991b1b; }
+  .status-used { background: #dcfce7; color: #166534; }
+
+  .use-select-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .use-select-item:active { background: #dbeafe; border-color: #3b82f6; }
   .record-time.cancelled { text-decoration: line-through; color: #d1d5db; }
 
   .empty-state {
@@ -466,6 +479,13 @@
         <div class="result-name" id="dog-resultName"></div>
       </div>
     </div>
+
+    <div id="dog-useSelectSection" class="hidden">
+      <div class="card">
+        <div class="card-title">🎫 사용 처리할 반려견을 선택하세요</div>
+        <div id="dog-useSelectList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
   </div>
 
   <!-- 기록 관리 -->
@@ -543,6 +563,13 @@
         <div class="result-name" id="touch-resultName"></div>
       </div>
     </div>
+
+    <div id="touch-useSelectSection" class="hidden">
+      <div class="card">
+        <div class="card-title">🎫 사용 처리할 참가자를 선택하세요</div>
+        <div id="touch-useSelectList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      </div>
+    </div>
   </div>
 
   <div id="touch-sub-rec" class="container hidden">
@@ -590,18 +617,17 @@
     const r = race[activeTab];
     const sub = activeSubTab[activeTab];
 
-    if (sub === 'rec') {
+    if (r.selectMode && r.selectedRecords.size > 0) {
       const count = r.selectedRecords.size;
-      if (count > 0) {
-        const confirmLabel = r.selectAction === 'use' ? '사용 확정' : '취소 확정';
-        actions.innerHTML =
-          `<button class="btn-header btn-header-cancel" onclick="race.${activeTab}.cancelSelection()">✕ 취소</button>` +
-          `<button class="btn-header btn-header-confirm" onclick="race.${activeTab}.confirmAction()">✓ ${confirmLabel} (${count})</button>`;
-      } else {
-        actions.innerHTML =
-          `<button class="btn-ticket-cancel" style="background:#22c55e;" onclick="race.${activeTab}.enterSelectMode('use')">🎫 티켓 사용 처리</button>` +
-          `<button class="btn-ticket-cancel" onclick="race.${activeTab}.enterSelectMode('cancel')">🎫 티켓 취소 처리</button>`;
-      }
+      actions.innerHTML =
+        `<button class="btn-header btn-header-cancel" onclick="race.${activeTab}.cancelSelection()">✕ 취소</button>` +
+        `<button class="btn-header btn-header-confirm" onclick="race.${activeTab}.confirmAction()">✓ 취소 확정 (${count})</button>`;
+    } else if (sub === 'rec') {
+      actions.innerHTML =
+        `<button class="btn-ticket-cancel" onclick="race.${activeTab}.enterSelectMode('cancel')">🎫 티켓 취소 처리</button>`;
+    } else if (r.phase === 'done') {
+      actions.innerHTML =
+        `<button class="btn-ticket-cancel" style="background:#22c55e;" onclick="race.${activeTab}.enterUseMode()">🎫 티켓 사용 처리</button>`;
     } else {
       actions.innerHTML = `<span class="badge badge-waiting" id="statusBadge">대기중</span>`;
       r.syncBadge();
@@ -835,7 +861,17 @@
       state.renderRecords();
 
       el(prefix + '-controlBtns').innerHTML =
-        `<button class="btn-control btn-start" onclick="race.${prefix}.reset()">🏠 처음으로</button>`;
+        `<button class="btn-control btn-reset" onclick="race.${prefix}.reset()">🏠 처음으로</button>`;
+      updateHeaderActions();
+    };
+
+    state.confirmUse = function(idx) {
+      if (idx >= 0 && idx < state.history.length) {
+        state.history[idx].used = true;
+        state.renderRecords();
+      }
+      el(prefix + '-useSelectSection').classList.add('hidden');
+      updateHeaderActions();
     };
 
     state.cancel = function() {
@@ -868,12 +904,18 @@
       el(prefix + '-countdownSection').classList.add('hidden');
       el(prefix + '-timerSection').classList.add('hidden');
       el(prefix + '-resultSection').classList.add('hidden');
+      el(prefix + '-useSelectSection').classList.add('hidden');
 
       el(prefix + '-controlBtns').innerHTML =
         `<button class="btn-control btn-start" id="${prefix}-btnStart" onclick="race.${prefix}.start()" disabled>▶ 시작</button>`;
     };
 
     // 기록 관리
+    state.enterUseMode = function() {
+      el(prefix + '-useSelectSection').classList.remove('hidden');
+      state.renderUseSelect();
+    };
+
     state.enterSelectMode = function(action) {
       state.selectMode = true;
       state.selectAction = action;
@@ -884,6 +926,7 @@
 
     state.cancelSelection = function() {
       state.selectMode = false;
+      state.selectAction = '';
       state.selectedRecords.clear();
       state.renderRecords();
       updateHeaderActions();
@@ -901,10 +944,9 @@
 
     state.confirmAction = function() {
       if (state.selectedRecords.size === 0) return;
-      const newStatus = state.selectAction === 'use' ? 'valid' : 'cancelled';
       state.selectedRecords.forEach(idx => {
         if (idx >= 0 && idx < state.history.length) {
-          state.history[idx].status = newStatus;
+          state.history[idx].status = 'cancelled';
         }
       });
       state.selectMode = false;
@@ -912,6 +954,27 @@
       state.selectedRecords.clear();
       state.renderRecords();
       updateHeaderActions();
+    };
+
+    state.renderUseSelect = function() {
+      const list = el(prefix + '-useSelectList');
+      const unused = state.history.map((h, i) => ({ ...h, idx: i })).filter(h => !h.used && h.status !== 'cancelled');
+      if (unused.length === 0) {
+        list.innerHTML = '<div class="empty-state">사용 처리할 기록이 없어요</div>';
+        return;
+      }
+      list.innerHTML = unused.map(h => {
+        const displayName = h.nickname ? `${h.name} (${h.nickname})` : h.name;
+        return `
+          <div class="use-select-item" onclick="race.${prefix}.confirmUse(${h.idx})">
+            <span class="record-num">${h.idx + 1}</span>
+            <div class="record-info">
+              <div class="record-name">${esc(displayName)}</div>
+              <div class="record-meta">티켓 ${esc(h.nfc || '-')} · ${formatTime(h.time)}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
     };
 
     state.renderRecords = function() {
@@ -927,14 +990,11 @@
         const displayName = h.nickname ? `${h.name} (${h.nickname})` : h.name;
         const isCancelled = h.status === 'cancelled';
         const checked = state.selectedRecords.has(i) ? 'checked' : '';
-        const showCheckbox = state.selectMode && (
-          (state.selectAction === 'cancel' && !isCancelled) ||
-          (state.selectAction === 'use' && isCancelled)
-        );
+        const showCheckbox = state.selectMode && !isCancelled;
         const timeClass = isCancelled ? 'record-time cancelled' : 'record-time';
         const statusHtml = isCancelled
           ? `<span class="record-status status-cancelled">취소</span>`
-          : `<span class="record-status status-valid">사용</span>`;
+          : '';
 
         return `
           <li class="record-item">
